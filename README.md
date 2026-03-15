@@ -1,5 +1,7 @@
 # 🔮 SoulCraft
 
+**[English](README.md)** | **[中文](README_zh.md)**
+
 **Craft AI souls from humanity's greatest minds.**
 
 SoulCraft is a data-driven persona extraction pipeline that transforms real human data (interviews, speeches, letters, social media) into structured AI personality definitions compatible with multi-agent systems like [OpenClaw](https://github.com/openclaw), [Claude Code](https://docs.anthropic.com/en/docs/agents), and [Codex](https://openai.com/codex).
@@ -8,7 +10,7 @@ SoulCraft is a data-driven persona extraction pipeline that transforms real huma
 
 ---
 
-## 🌟 Vision: 人类群星闪耀
+## 🌟 Vision
 
 Imagine a world where the greatest minds in human history can collaborate:
 
@@ -97,16 +99,16 @@ A 4-stage pipeline driven by a master prompt template:
 ```
 soulcraft/
 ├── souls/                        ← Atomic units: one soul.md per person
-│   ├── cao-cao/soul.md           ← 曹操 — CEO / Router Agent
-│   ├── zhuge-liang/soul.md       ← 诸葛亮 — CTO / Architect
+│   ├── cao-cao/soul.md           ← Cao Cao — CEO / Router Agent
+│   ├── zhuge-liang/soul.md       ← Zhuge Liang — CTO / Architect
 │   ├── elon-musk/soul.md         ← Musk — First-principles innovator
 │   ├── warren-buffett/soul.md    ← Buffett — Value investor
-│   └── duan-yongping/soul.md     ← 段永平 — Product intuition
+│   └── duan-yongping/soul.md     ← Duan Yongping — Product intuition
 │
 ├── teams/                        ← Pre-configured team templates (YAML)
-│   ├── three-kingdoms.yaml       ← 三国管理团队
-│   ├── dream-company.yaml        ← 人类最强公司
-│   └── china-business.yaml       ← 中国商业天团
+│   ├── three-kingdoms.yaml       ← Three Kingdoms Management Team
+│   ├── dream-company.yaml        ← Humanity's Dream Company
+│   └── china-business.yaml       ← China Business All-Stars
 │
 ├── l0_adapter/                   ← Data source converter (DLG/MON/MIC/ATT)
 └── docs/                         ← Pipeline templates & documentation
@@ -120,7 +122,7 @@ Users can freely compose: put Cao Cao as CEO leading Musk, Buffett, and Duan Yon
 
 ## 🏯 Team Templates
 
-### Three Kingdoms Management Team (三国管理团队)
+### Three Kingdoms Management Team
 
 | Role | Soul | Why |
 |------|------|-----|
@@ -185,6 +187,7 @@ python -m l0_adapter --type DLG \
 - [3+1 Pipeline Prompt Template](docs/pipeline_prompt_template.md)
 - [ABCDE Persona Model](docs/persona_model.md)
 - [Integration with OpenClaw](docs/openclaw_integration.md)
+- [Team Templates Roadmap](docs/roadmap_team_templates.md)
 
 ---
 
