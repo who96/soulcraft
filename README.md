@@ -215,10 +215,10 @@ python -m l0_adapter --type DLG \
 
 - [x] 3+1 Pipeline v5 with ABCDE model
 - [x] L0 Adapter (Dialogue, Monologue, Micro-burst, Attributed parsers)
-- [ ] Canonical soul schema (JSON/YAML IR with provenance)
-- [ ] Example base souls: Linus, Buffett (end-to-end)
-- [ ] Verification v0 (holdout set + automated eval script)
-- [ ] OpenClaw soul.md compiler + runnable demo
+- [x] Canonical soul schema (JSON/YAML IR with provenance)
+- [x] Example base souls: Linus, Buffett (end-to-end)
+- [x] Verification v0 (holdout set + automated eval script)
+- [x] OpenClaw soul.md compiler + runnable demo
 
 ### Phase 2: Teams & Ecosystem
 

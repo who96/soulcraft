@@ -222,10 +222,10 @@ python -m l0_adapter --type DLG \
 
 - [x] 3+1 流水线 v5（ABCDE 模型）
 - [x] L0 适配器（对话、独白、微爆发、转述 四大解析器）
-- [ ] 规范灵魂 Schema（JSON/YAML IR，含来源溯源）
-- [ ] 示例基座灵魂：Linus、巴菲特（端到端跑通）
-- [ ] 验证框架 v0（留出测试集 + 自动评估脚本）
-- [ ] OpenClaw soul.md 编译器 + 可运行 demo
+- [x] 规范灵魂 Schema（JSON/YAML IR，含来源溯源）
+- [x] 示例基座灵魂：Linus、巴菲特（端到端跑通）
+- [x] 验证框架 v0（留出测试集 + 自动评估脚本）
+- [x] OpenClaw soul.md 编译器 + 可运行 demo
 
 ### Phase 2：团队与生态
 

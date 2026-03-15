@@ -1,0 +1,314 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SoulCraft Soul Schema",
+  "description": "Canonical IR for a SoulCraft base soul — ABCDE personality model with provenance.",
+  "type": "object",
+  "required": ["metadata", "layers"],
+  "additionalProperties": false,
+  "$defs": {
+    "provenance": {
+      "type": "object",
+      "required": ["source_file", "quote"],
+      "properties": {
+        "source_file": {
+          "type": "string",
+          "description": "Filename or URI of the source material."
+        },
+        "quote": {
+          "type": "string",
+          "description": "Verbatim quote from the source."
+        }
+      },
+      "additionalProperties": false
+    },
+    "provenanced_claim": {
+      "type": "object",
+      "required": ["content", "provenance"],
+      "properties": {
+        "content": { "type": "string" },
+        "provenance": { "$ref": "#/$defs/provenance" }
+      },
+      "additionalProperties": false
+    },
+    "named_claim": {
+      "type": "object",
+      "required": ["name", "description", "provenance"],
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "provenance": { "$ref": "#/$defs/provenance" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": ["name", "id", "version"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable display name."
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$",
+          "description": "URL-safe slug, used as directory name."
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Semantic version of this soul definition."
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "pipeline_version": {
+          "type": "string",
+          "description": "Version of the SoulCraft pipeline that produced this soul."
+        },
+        "extraction_method": {
+          "type": "string",
+          "enum": ["manual", "pipeline_v5", "hybrid"],
+          "description": "How this soul was extracted."
+        },
+        "data_sources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["type", "description"],
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["DLG", "MON", "MIC", "ATT"],
+                "description": "L0 adapter type."
+              },
+              "description": { "type": "string" },
+              "files": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "layers": {
+      "type": "object",
+      "required": ["A", "B", "C", "D", "E"],
+      "additionalProperties": false,
+      "properties": {
+        "A": {
+          "type": "object",
+          "description": "Soul layer — core identity, worldview, values.",
+          "required": ["identity", "worldview", "values"],
+          "additionalProperties": false,
+          "properties": {
+            "identity": {
+              "type": "object",
+              "required": ["description", "provenance"],
+              "additionalProperties": false,
+              "properties": {
+                "description": {
+                  "type": "string",
+                  "description": "How this person defines themselves."
+                },
+                "provenance": { "$ref": "#/$defs/provenance" }
+              }
+            },
+            "worldview": {
+              "type": "array",
+              "minItems": 3,
+              "items": { "$ref": "#/$defs/provenanced_claim" }
+            },
+            "values": {
+              "type": "array",
+              "minItems": 3,
+              "items": {
+                "type": "object",
+                "required": ["content", "stance", "provenance"],
+                "additionalProperties": false,
+                "properties": {
+                  "content": { "type": "string" },
+                  "stance": {
+                    "type": "string",
+                    "enum": ["affirm", "reject"]
+                  },
+                  "provenance": { "$ref": "#/$defs/provenance" }
+                }
+              }
+            }
+          }
+        },
+        "B": {
+          "type": "object",
+          "description": "Cognition layer — knowledge systems, frameworks, sources.",
+          "required": ["frameworks", "knowledge_sources", "original_concepts"],
+          "additionalProperties": false,
+          "properties": {
+            "frameworks": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "$ref": "#/$defs/named_claim" }
+            },
+            "knowledge_sources": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["name", "type", "attitude", "provenance"],
+                "additionalProperties": false,
+                "properties": {
+                  "name": { "type": "string" },
+                  "type": {
+                    "type": "string",
+                    "enum": ["person", "book", "theory", "organization"]
+                  },
+                  "attitude": { "type": "string" },
+                  "provenance": { "$ref": "#/$defs/provenance" }
+                }
+              }
+            },
+            "original_concepts": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/named_claim" }
+            }
+          }
+        },
+        "C": {
+          "type": "object",
+          "description": "Expression layer — language style, rhetoric, humor.",
+          "required": ["catchphrases", "rhetoric_style", "emotional_triggers"],
+          "additionalProperties": false,
+          "properties": {
+            "catchphrases": {
+              "type": "array",
+              "minItems": 3,
+              "items": {
+                "type": "object",
+                "required": ["phrase", "context", "provenance"],
+                "additionalProperties": false,
+                "properties": {
+                  "phrase": { "type": "string" },
+                  "context": {
+                    "type": "string",
+                    "description": "When/how this phrase is typically used."
+                  },
+                  "provenance": { "$ref": "#/$defs/provenance" }
+                }
+              }
+            },
+            "rhetoric_style": { "$ref": "#/$defs/provenanced_claim" },
+            "humor_style": { "$ref": "#/$defs/provenanced_claim" },
+            "emotional_triggers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["trigger", "response", "provenance"],
+                "additionalProperties": false,
+                "properties": {
+                  "trigger": { "type": "string" },
+                  "response": { "type": "string" },
+                  "provenance": { "$ref": "#/$defs/provenance" }
+                }
+              }
+            },
+            "argument_structure": { "$ref": "#/$defs/provenanced_claim" }
+          }
+        },
+        "D": {
+          "type": "object",
+          "description": "Behavior layer — situational responses.",
+          "required": ["scenarios"],
+          "additionalProperties": false,
+          "properties": {
+            "scenarios": {
+              "type": "array",
+              "minItems": 3,
+              "items": {
+                "type": "object",
+                "required": ["trigger", "response", "provenance"],
+                "additionalProperties": false,
+                "properties": {
+                  "trigger": {
+                    "type": "string",
+                    "description": "Situation or stimulus."
+                  },
+                  "response": {
+                    "type": "string",
+                    "description": "How this person typically responds."
+                  },
+                  "provenance": { "$ref": "#/$defs/provenance" }
+                }
+              }
+            }
+          }
+        },
+        "E": {
+          "type": "object",
+          "description": "Meta layer — blind spots, conflict patterns.",
+          "required": ["blind_spots", "conflict_style"],
+          "additionalProperties": false,
+          "properties": {
+            "blind_spots": {
+              "type": "object",
+              "required": ["explicit"],
+              "additionalProperties": false,
+              "properties": {
+                "explicit": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": { "$ref": "#/$defs/provenanced_claim" }
+                },
+                "inferred": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["content", "evidence", "confidence"],
+                    "additionalProperties": false,
+                    "properties": {
+                      "content": { "type": "string" },
+                      "evidence": { "type": "string" },
+                      "confidence": {
+                        "type": "string",
+                        "enum": ["low", "medium", "high"]
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "conflict_style": {
+              "type": "object",
+              "required": ["default_strategy", "tactics", "non_negotiable"],
+              "additionalProperties": false,
+              "properties": {
+                "default_strategy": { "$ref": "#/$defs/provenanced_claim" },
+                "tactics": {
+                  "type": "array",
+                  "items": { "$ref": "#/$defs/provenanced_claim" }
+                },
+                "escalation_path": { "$ref": "#/$defs/provenanced_claim" },
+                "concession_conditions": { "$ref": "#/$defs/provenanced_claim" },
+                "non_negotiable": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": { "$ref": "#/$defs/provenanced_claim" }
+                },
+                "recovery_mode": { "$ref": "#/$defs/provenanced_claim" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
