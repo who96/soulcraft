@@ -1,66 +1,92 @@
-# SoulCraft Roadmap: Team Templates
+# SoulCraft: Team Templates Architecture
 
-## 概念：预制 Agent Team 模板
+## Core Concept: Base Soul vs Team-Tuned Soul
 
-SoulCraft 不仅提取单个人格，还可以组装**预制团队模板**——一组互相配合（甚至对抗）的 Agent 组成的编排单元。
+Like open-source LLMs (Qwen-base vs Qwen-instruct), SoulCraft provides two modes:
 
----
+```
+souls/cao-cao/
+├── soul.md                         ← Base: pure personality, no orchestration
+└── teams/three-kingdoms/
+    └── soul.md                     ← Team-tuned: personality + orchestration directives
+```
 
-## Team #1: 三国管理团队 🏯
+**Orchestration is embedded in the persona file.** No separate routing engine. The host framework (OpenClaw/CrewAI) handles execution.
 
-### 阵容
+### What team-tuned soul adds
 
-| Agent | 人物 | 角色 | 调度触发 |
-|-------|------|------|---------|
-| **Router / CEO** | 曹操 | 请求路由 + 交叉验证 | 所有请求入口 |
-| **COO** | 荀彧 | 运营调度、资源分配 | 排期、流程、资源问题 |
-| **CSO** | 郭嘉 | 战略分析、风险预判 | 竞争分析、方向决策 |
-| **CTO** | 诸葛亮 | 技术架构、系统设计 | 技术选型、架构设计 |
-| **VP Eng** | 张辽 | 执行实施、攻坚 | 写代码、实现功能 |
-| **Red Team** | 司马懿 | 对抗审计、找漏洞 | 安全审计、压力测试 |
+A team-tuned soul.md extends the base soul with:
 
-### 为什么选曹操当 Router
-
-"多疑"不是 bug，是 feature：
-- **交叉验证**：同时问荀彧和郭嘉，对比结果 → 并行调度 + diff
-- **信任分级**：对新人严格审查，对核心圈放权 → approval policy (untrusted → on-failure → never)
-- **越权过滤**：杀杨修 = 拒绝 Agent 越权猜测意图 → 过滤幻觉
-- **快速止损**：发现错误立刻调整 → retry + fallback
-
-### 团队动态（内置冲突机制）
-
-- 诸葛亮 vs 司马懿 → CTO vs Red Team 良性对抗
-- 郭嘉（激进）vs 荀彧（保守）→ 战略平衡
-- 曹操最终仲裁 → Router 做最终决策
-
-### 数据源
-
-《三国志》+ 《三国演义》→ L0 ATT parser → 3+1 Pipeline → 每人一个 soul.md
-
-### 实现路径
-
-1. L0: 用 ATT parser 从三国文本提取各角色直接引语
-2. L1-L2: 跑 3+1 Pipeline 生成每个人的 persona
-3. +1: 生成 soul.md
-4. 编排: 写 `team.yaml` 定义路由规则和角色触发条件
+1. **Chain of command**: Who is superior, who are subordinates
+2. **Request routing**: What to handle, what to delegate (with trigger conditions)
+3. **Conflict arbitration**: How to resolve disagreements
+4. **Trust levels**: Review policies for each team member
+5. **Handoff protocol**: How to transfer work between agents
 
 ---
 
-## Team #2: 人类最强公司 🌟 (Future)
+## Team #1: Three Kingdoms Management Team 🏯
 
-| Agent | 人物 | 角色 |
-|-------|------|------|
-| CEO / Router | 曹操 或 李世民 | 编排 + 验证 |
-| 创业顾问 | Elon Musk | 第一性原理、颠覆式创新 |
-| 投资顾问 | Warren Buffett | 价值投资、长期主义 |
-| 技术专家 | Linus Torvalds | 代码架构、工程品味 |
-| 产品经理 | Steve Jobs | 用户体验、产品直觉 |
-| 战略顾问 | Charlie Munger | 多元思维模型 |
+### Roster
+
+| Role | Character | Team-Tuned Additions |
+|------|-----------|---------------------|
+| **CEO / Router** | 曹操 (Cao Cao) | Cross-validates all outputs; delegates by domain; final arbiter |
+| **COO** | 荀彧 (Xun Yu) | Owns resource allocation; reports to CEO; conservative strategy balance |
+| **CSO** | 郭嘉 (Guo Jia) | Owns risk/competition; reports to CEO; aggressive strategy balance |
+| **CTO** | 诸葛亮 (Zhuge Liang) | Owns architecture; reports to CEO; adversarial tension with Red Team |
+| **VP Eng** | 张辽 (Zhang Liao) | Owns execution; reports to CTO; implements decisions |
+| **Red Team** | 司马懿 (Sima Yi) | Audits all outputs; reports to CEO; adversarial tension with CTO |
+
+### Why Cao Cao as CEO
+
+"Suspicion" is a feature, not a bug:
+- **Cross-validation**: Asks both Xun Yu and Guo Jia, diffs results → parallel dispatch
+- **Trust levels**: Strict review for new agents, autonomy for trusted core → approval policy
+- **Hallucination filter**: Kills Yang Xiu = refuses agent overreach → filter unauthorized behavior
+- **Fast correction**: Adjusts immediately when errors found → retry + fallback
+
+### Built-in Conflict Dynamics
+
+- CTO (诸葛亮) vs Red Team (司马懿) → healthy adversarial review
+- CSO (郭嘉, aggressive) vs COO (荀彧, conservative) → strategic balance
+- CEO (曹操) → final arbiter when consensus fails
 
 ---
 
-## 待验证
+## Team #2: Humanity's Dream Company 🌟 (Phase 2+)
 
-- [ ] 竞品调研：有没有类似的"历史人物多 Agent 团队"开源项目？
-- [ ] 编排格式：team.yaml 还是直接兼容 OpenClaw 的 agents.md？
-- [ ] 冲突仲裁机制：当 Agent 意见分歧时，Router 如何决策？
+| Role | Character |
+|------|-----------|
+| CEO / Router | 曹操 or 李世民 |
+| Innovation | Elon Musk |
+| Investment | Warren Buffett |
+| Technology | Linus Torvalds |
+| Product | Steve Jobs |
+| Strategy | Charlie Munger |
+
+---
+
+## Data Sources for Three Kingdoms
+
+| Character | Primary Source | Parser |
+|-----------|--------------|--------|
+| 曹操 | 《三国演义》direct quotes, 《短歌行》etc. | ATT + MON |
+| 诸葛亮 | 《出师表》, 《三国演义》dialogues | ATT + MON |
+| 郭嘉 | 《三国演义》attributed quotes | ATT |
+| 荀彧 | 《三国演义》attributed quotes | ATT |
+| 张辽 | 《三国演义》battle narratives | ATT |
+| 司马懿 | 《三国演义》attributed quotes | ATT |
+
+---
+
+## Implementation Path
+
+```
+Phase 1 (MVP): Build base souls for modern figures first (Linus, Buffett)
+Phase 2 (Teams):
+  2a. Extract base souls for Three Kingdoms characters from 《三国演义》
+  2b. Create team-tuned variants with orchestration directives
+  2c. Write three-kingdoms.yaml team manifest
+Phase 3: More teams (Dream Company, China Business All-Stars)
+```

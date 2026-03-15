@@ -98,25 +98,43 @@ A 4-stage pipeline driven by a master prompt template:
 
 ```
 soulcraft/
-├── souls/                        ← Atomic units: one soul.md per person
-│   ├── cao-cao/soul.md           ← Cao Cao — CEO / Router Agent
-│   ├── zhuge-liang/soul.md       ← Zhuge Liang — CTO / Architect
-│   ├── elon-musk/soul.md         ← Musk — First-principles innovator
-│   ├── warren-buffett/soul.md    ← Buffett — Value investor
-│   └── duan-yongping/soul.md     ← Duan Yongping — Product intuition
+├── souls/                              ← Atomic units
+│   ├── cao-cao/
+│   │   ├── soul.md                     ← Base soul: pure personality
+│   │   └── teams/three-kingdoms/
+│   │       └── soul.md                 ← Team-tuned: personality + orchestration directives
+│   ├── zhuge-liang/
+│   │   ├── soul.md
+│   │   └── teams/three-kingdoms/soul.md
+│   ├── warren-buffett/soul.md
+│   └── elon-musk/soul.md
 │
-├── teams/                        ← Pre-configured team templates (YAML)
-│   ├── three-kingdoms.yaml       ← Three Kingdoms Management Team
-│   ├── dream-company.yaml        ← Humanity's Dream Company
-│   └── china-business.yaml       ← China Business All-Stars
+├── teams/                              ← Team manifest files
+│   ├── three-kingdoms.yaml             ← References team-tuned souls
+│   └── dream-company.yaml
 │
-├── l0_adapter/                   ← Data source converter (DLG/MON/MIC/ATT)
-└── docs/                         ← Pipeline templates & documentation
+├── l0_adapter/                         ← Data source converter (DLG/MON/MIC/ATT)
+└── docs/                               ← Pipeline templates & documentation
 ```
 
-**`souls/` is the atomic layer. `teams/` is just combination recipes.**
+---
 
-Users can freely compose: put Cao Cao as CEO leading Musk, Buffett, and Duan Yongping — or swap in any other soul.
+## 🧬 Dual-Layer Soul Model
+
+Like open-source LLMs, SoulCraft provides two modes:
+
+| Mode | Analogy | What it contains |
+|------|---------|------------------|
+| **Base Soul** | `Qwen-base` | Pure personality. No orchestration. Use as-is or fine-tune yourself. |
+| **Team-Tuned Soul** | `Qwen-instruct` | Personality + orchestration directives (who reports to whom, conflict rules, trust levels). |
+
+**Orchestration is embedded in the persona file, not in a separate routing engine.** The host framework (OpenClaw, CrewAI, AutoGen) handles execution.
+
+A team-tuned soul adds:
+- Chain of command (who is the superior, who are subordinates)
+- Request routing rules (what to handle, what to delegate)
+- Conflict arbitration strategy
+- Trust level and review policies
 
 ---
 
@@ -139,9 +157,16 @@ Built-in conflict dynamics: CTO vs Red Team (healthy adversarial tension), CSO (
 
 ## 🔌 Integration
 
-### OpenClaw / Claude Code
+SoulCraft is a **compiler**, not a runtime. It produces soul artifacts; host frameworks execute them.
 
-SoulCraft output is designed to be directly usable as `soul.md` files:
+```bash
+# Export to different frameworks
+soulcraft export warren-buffett --target openclaw   # → .openclaw/soul.md
+soulcraft export warren-buffett --target crewai      # → Agent(role, backstory, ...)
+soulcraft export warren-buffett --target autogen      # → AssistantAgent config
+```
+
+### OpenClaw
 
 ```
 .openclaw/
@@ -150,16 +175,9 @@ SoulCraft output is designed to be directly usable as `soul.md` files:
 └── agents.md
 ```
 
-### Multi-Agent Orchestration
+### Canonical Soul IR
 
-The **E2 Conflict Resolution** layer enables realistic multi-agent interaction:
-
-```python
-# Each agent knows how they handle disagreement
-musk_agent.conflict_style   # "first-principles debate, never yields on physics"
-buffett_agent.conflict_style # "patient, data-driven, yields when numbers disagree"
-caocao_agent.trust_policy   # "cross-validate with 2nd agent before accepting"
-```
+Under the hood, SoulCraft maintains a `soul.json` (or `.yaml`) as the source of truth. `soul.md` is a human-readable compilation target. The IR includes ABCDE layers, provenance (source quotes, confidence scores, parser type), and version metadata.
 
 ---
 
@@ -193,15 +211,27 @@ python -m l0_adapter --type DLG \
 
 ## 🗺️ Roadmap
 
+### Phase 1: Core Loop (MVP)
+
 - [x] 3+1 Pipeline v5 with ABCDE model
 - [x] L0 Adapter (Dialogue, Monologue, Micro-burst, Attributed parsers)
-- [ ] Example souls: Buffett, Musk, Linus, Cao Cao
-- [ ] Team templates: Three Kingdoms, Dream Company
-- [ ] `team.yaml` schema and routing engine
-- [ ] OpenClaw soul.md auto-generation
-- [ ] Verification framework (train/test split for persona accuracy)
-- [ ] Web UI for persona exploration
-- [ ] Multi-agent debate simulation with conflict resolution
+- [ ] Canonical soul schema (JSON/YAML IR with provenance)
+- [ ] Example base souls: Linus, Buffett (end-to-end)
+- [ ] Verification v0 (holdout set + automated eval script)
+- [ ] OpenClaw soul.md compiler + runnable demo
+
+### Phase 2: Teams & Ecosystem
+
+- [ ] More base souls: Cao Cao, Munger, Zhuge Liang
+- [ ] Three Kingdoms team-tuned souls
+- [ ] CrewAI / AutoGen exporters
+- [ ] Contributor submission template
+
+### Phase 3: Advanced
+
+- [ ] Web UI for soul browsing + evidence chain
+- [ ] More team templates (Dream Company, China Business)
+- [ ] Multi-agent interaction playground
 
 ---
 
@@ -209,11 +239,11 @@ python -m l0_adapter --type DLG \
 
 We welcome contributions! Key areas:
 
-1. **New souls** — Extract personas from historical/modern figures and submit `soul.md`
+1. **New base souls** — Extract personas and submit `soul.md` with evidence
 2. **New L0 parsers** — Support more data source formats
-3. **Team templates** — Design new team compositions for different scenarios
+3. **Team-tuned variants** — Create orchestration-aware soul variants
 4. **Evaluation metrics** — Better ways to measure persona fidelity
-5. **Integration plugins** — Connect with more agent frameworks (OpenClaw, CrewAI, AutoGen)
+5. **Framework exporters** — Connect with more agent frameworks (OpenClaw, CrewAI, AutoGen)
 
 ---
 

@@ -97,25 +97,43 @@ python -m l0_adapter --type MIC \
 
 ```
 soulcraft/
-├── souls/                        ← 原子单元：每人一个 soul.md
-│   ├── cao-cao/soul.md           ← 曹操 — CEO / 路由 Agent
-│   ├── zhuge-liang/soul.md       ← 诸葛亮 — CTO / 架构师
-│   ├── elon-musk/soul.md         ← 马斯克 — 第一性原理创新者
-│   ├── warren-buffett/soul.md    ← 巴菲特 — 价值投资者
-│   └── duan-yongping/soul.md     ← 段永平 — 产品直觉
+├── souls/                              ← 原子单元
+│   ├── cao-cao/
+│   │   ├── soul.md                     ← 基座版：纯人格
+│   │   └── teams/three-kingdoms/
+│   │       └── soul.md                 ← 团队版：人格 + 编排指令
+│   ├── zhuge-liang/
+│   │   ├── soul.md
+│   │   └── teams/three-kingdoms/soul.md
+│   ├── warren-buffett/soul.md
+│   └── elon-musk/soul.md
 │
-├── teams/                        ← 预编排团队模板 (YAML)
-│   ├── three-kingdoms.yaml       ← 三国管理团队
-│   ├── dream-company.yaml        ← 人类最强公司
-│   └── china-business.yaml       ← 中国商业天团
+├── teams/                              ← 团队清单文件
+│   ├── three-kingdoms.yaml             ← 引用各成员的团队版 soul
+│   └── dream-company.yaml
 │
-├── l0_adapter/                   ← 数据源转换器 (DLG/MON/MIC/ATT)
-└── docs/                         ← 流水线模板与文档
+├── l0_adapter/                         ← 数据源转换器 (DLG/MON/MIC/ATT)
+└── docs/                               ← 流水线模板与文档
 ```
 
-**`souls/` 是原子层，`teams/` 只是组合配方。**
+---
 
-用户可以自由组合：让曹操当 CEO 领导马斯克、巴菲特和段永平——或者替换成任何其他灵魂。
+## 🧬 双层灵魂模型
+
+就像开源大模型同时提供 base 和 instruct 版本一样，SoulCraft 提供两种模式：
+
+| 模式 | 类比 | 包含内容 |
+|------|------|----------|
+| **基座灵魂** | `Qwen-base` | 纯人格。无编排指令。用户可自行微调。|
+| **团队微调灵魂** | `Qwen-instruct` | 人格 + 编排指令（上下级、冲突规则、信任等级）。开箱即用。|
+
+**编排逻辑写在人设文件里，不是独立的路由引擎。** 宿主框架（OpenClaw / CrewAI / AutoGen）负责执行。
+
+团队微调版额外包含：
+- 指挥链（谁是上级、谁是下属）
+- 请求路由规则（什么自己处理、什么转交）
+- 冲突仲裁策略
+- 信任等级与审查策略
 
 ---
 
@@ -146,9 +164,16 @@ soulcraft/
 
 ## 🔌 集成
 
-### OpenClaw / Claude Code
+SoulCraft 是**编译器**，不是运行时。它生产灵魂产物，宿主框架负责执行。
 
-SoulCraft 的输出可直接作为 `soul.md` 使用：
+```bash
+# 导出到不同框架
+soulcraft export warren-buffett --target openclaw   # → .openclaw/soul.md
+soulcraft export warren-buffett --target crewai      # → Agent(role, backstory, ...)
+soulcraft export warren-buffett --target autogen      # → AssistantAgent 配置
+```
+
+### OpenClaw
 
 ```
 .openclaw/
@@ -157,16 +182,9 @@ SoulCraft 的输出可直接作为 `soul.md` 使用：
 └── agents.md
 ```
 
-### 多 Agent 编排
+### 规范灵魂 IR
 
-**E2 冲突解决**层使真实的多 Agent 交互成为可能：
-
-```python
-# 每个 Agent 知道自己如何处理分歧
-musk_agent.conflict_style   # "第一性原理辩论，物理问题绝不让步"
-buffett_agent.conflict_style # "耐心、数据驱动，数字说了算"
-caocao_agent.trust_policy   # "先让第二个人也看看，再做决定"
-```
+SoulCraft 在底层维护 `soul.json`（或 `.yaml`）作为数据源。`soul.md` 是人类可读的编译目标。IR 包含 ABCDE 五层数据、来源溯源（原文引用、置信度、解析器类型）和版本元数据。
 
 ---
 
@@ -200,15 +218,27 @@ python -m l0_adapter --type DLG \
 
 ## 🗺️ 路线图
 
-- [x] 3+1 流水线 v5 (ABCDE 模型)
+### Phase 1：核心闭环（MVP）
+
+- [x] 3+1 流水线 v5（ABCDE 模型）
 - [x] L0 适配器（对话、独白、微爆发、转述 四大解析器）
-- [ ] 示例灵魂：巴菲特、马斯克、Linus、曹操
-- [ ] 团队模板：三国管理团队、人类最强公司
-- [ ] `team.yaml` 规范与路由引擎
-- [ ] OpenClaw soul.md 自动生成
-- [ ] 验证框架（训练集/对照组分割测试人格准确度）
-- [ ] Web UI 人格探索界面
-- [ ] 多 Agent 辩论模拟（含冲突解决机制）
+- [ ] 规范灵魂 Schema（JSON/YAML IR，含来源溯源）
+- [ ] 示例基座灵魂：Linus、巴菲特（端到端跑通）
+- [ ] 验证框架 v0（留出测试集 + 自动评估脚本）
+- [ ] OpenClaw soul.md 编译器 + 可运行 demo
+
+### Phase 2：团队与生态
+
+- [ ] 更多基座灵魂：曹操、芒格、诸葛亮
+- [ ] 三国管理团队微调版灵魂
+- [ ] CrewAI / AutoGen 导出器
+- [ ] 贡献者提交模板
+
+### Phase 3：进阶功能
+
+- [ ] Web UI（灵魂浏览 + 证据链查看）
+- [ ] 更多团队模板（人类最强公司、中国商业天团）
+- [ ] 多 Agent 交互实验场
 
 ---
 
@@ -216,11 +246,11 @@ python -m l0_adapter --type DLG \
 
 欢迎贡献！重点方向：
 
-1. **新灵魂** — 从历史/现代人物中提取人格，提交 `soul.md`
+1. **新基座灵魂** — 从历史/现代人物中提取人格，附证据提交 `soul.md`
 2. **新 L0 解析器** — 支持更多数据源格式
-3. **团队模板** — 为不同场景设计新的团队组合
+3. **团队微调版** — 为团队场景创建含编排指令的灵魂变体
 4. **评估指标** — 更好的人格还原度度量方法
-5. **集成插件** — 对接更多 Agent 框架（OpenClaw、CrewAI、AutoGen）
+5. **框架导出器** — 对接更多 Agent 框架（OpenClaw、CrewAI、AutoGen）
 
 ---
 
