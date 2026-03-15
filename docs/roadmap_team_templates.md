@@ -83,10 +83,17 @@ A team-tuned soul.md extends the base soul with:
 ## Implementation Path
 
 ```
-Phase 1 (MVP): Build base souls for modern figures first (Linus, Buffett)
-Phase 2 (Teams):
-  2a. Extract base souls for Three Kingdoms characters from 《三国演义》
-  2b. Create team-tuned variants with orchestration directives
-  2c. Write three-kingdoms.yaml team manifest
-Phase 3: More teams (Dream Company, China Business All-Stars)
+Phase 1 (MVP): ✅ Build base souls for modern figures (Linus, Buffett)
+Phase 2 (Teams): ✅ Team infrastructure
+  2a. ✅ Team schema (team_schema.json) — sequential routing
+  2b. ✅ Team compiler (team_compile.py) — team.yaml → team-tuned soul.md
+  2c. ✅ First team: Code Review (Linus + Buffett) — end-to-end demo
+  2d. ✅ demo.py --team — sequential pipeline with handoff protocol
+Phase 3 (More Teams & Integration):
+  3a. Extract base souls for Three Kingdoms characters from 《三国演义》
+  3b. Create team-tuned variants with orchestration directives
+  3c. Write three-kingdoms.yaml team manifest
+  3d. OpenClaw team-aware packaging
+Phase 4: More teams (Dream Company, China Business All-Stars), Web UI
 ```
+

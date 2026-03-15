@@ -222,12 +222,21 @@ python -m l0_adapter --type DLG \
 
 ### Phase 2: Teams & Ecosystem
 
+- [x] Team schema (`team_schema.json`) — sequential routing, array order = execution order
+- [x] Team compiler (`team_compile.py`) — team.yaml → team-tuned soul.md
+- [x] First team: Code Review (Linus + Buffett) — end-to-end demo
+- [x] `demo.py --team` — sequential multi-soul pipeline with handoff
+- [x] 84 tests passing (53 Phase 1 + 31 Phase 2)
+
+### Phase 3: More Teams & Integration
+
 - [ ] More base souls: Cao Cao, Munger, Zhuge Liang
 - [ ] Three Kingdoms team-tuned souls
+- [ ] OpenClaw team-aware packaging
 - [ ] CrewAI / AutoGen exporters
 - [ ] Contributor submission template
 
-### Phase 3: Advanced
+### Phase 4: Advanced
 
 - [ ] Web UI for soul browsing + evidence chain
 - [ ] More team templates (Dream Company, China Business)

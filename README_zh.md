@@ -229,12 +229,21 @@ python -m l0_adapter --type DLG \
 
 ### Phase 2：团队与生态
 
+- [x] 团队 Schema（`team_schema.json`）— 顺序路由，数组顺序即执行顺序
+- [x] 团队编译器（`team_compile.py`）— team.yaml → 团队微调版 soul.md
+- [x] 首个团队：代码审查（Linus + Buffett）— 端到端 demo 可运行
+- [x] `demo.py --team` — 顺序多灵魂流水线 + 交接协议
+- [x] 84 项测试全部通过（Phase 1 53 + Phase 2 31）
+
+### Phase 3：更多团队与集成
+
 - [ ] 更多基座灵魂：曹操、芒格、诸葛亮
 - [ ] 三国管理团队微调版灵魂
+- [ ] OpenClaw 团队感知打包
 - [ ] CrewAI / AutoGen 导出器
 - [ ] 贡献者提交模板
 
-### Phase 3：进阶功能
+### Phase 4：进阶功能
 
 - [ ] Web UI（灵魂浏览 + 证据链查看）
 - [ ] 更多团队模板（人类最强公司、中国商业天团）
