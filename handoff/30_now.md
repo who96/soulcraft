@@ -1,4 +1,4 @@
-Goal: SoulCraft Phase 1 MVP — complete canonical soul schema, first example souls (Linus + Buffett), verification framework v0, and OpenClaw compiler
-Next: Review compiled soul.md files for persona quality; commit + push all Phase 1 artifacts
-Gate: At least 2 base souls (Linus, Buffett) extracted end-to-end with automated eval passing ✅ ACHIEVED
-Evidence: 33/33 pytest passing; souls/linus-torvalds/soul.md + souls/warren-buffett/soul.md compiled; schemas/soul_schema.json defined
+Goal: SoulCraft Phase 3 — More Teams + OpenClaw Integration (Phase 2 Teams & Ecosystem complete)
+Next: Extract Three Kingdoms base souls from 《三国演义》, OpenClaw team-aware packaging, trust_level if needed
+Gate: At least 1 team with non-modern-figure souls (e.g. Three Kingdoms) + OpenClaw team package exported
+Evidence: Phase 2 pushed; 85 pytest passing; team schema + compiler + demo --team working; code-review team (Linus+Buffett) fully functional

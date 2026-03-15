@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SoulCraft Team Schema",
+  "description": "Defines a team of SoulCraft souls that collaborate sequentially.",
+  "type": "object",
+  "required": ["metadata", "routing_strategy", "souls"],
+  "additionalProperties": false,
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": ["name", "id", "version", "description"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable team name."
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$",
+          "description": "URL-safe slug, used as directory name under teams/."
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Semantic version of this team definition."
+        },
+        "description": {
+          "type": "string",
+          "description": "What this team does."
+        }
+      }
+    },
+    "routing_strategy": {
+      "type": "string",
+      "enum": ["sequential"],
+      "description": "How souls interact. 'sequential' = pipeline in array order."
+    },
+    "souls": {
+      "type": "array",
+      "minItems": 2,
+      "description": "Ordered list of souls. Array order = execution order.",
+      "items": {
+        "type": "object",
+        "required": ["soul_ref", "team_role", "directives"],
+        "additionalProperties": false,
+        "properties": {
+          "soul_ref": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$",
+            "description": "Soul ID — must match a directory under souls/."
+          },
+          "team_role": {
+            "type": "string",
+            "description": "This soul's role within the team."
+          },
+          "directives": {
+            "type": "string",
+            "description": "Team-specific instructions injected into this soul's Team Context."
+          }
+        }
+      }
+    }
+  }
+}

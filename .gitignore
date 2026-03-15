@@ -17,3 +17,9 @@ venv/
 *.swo
 .DS_Store
 Thumbs.db
+handoff/plans/
+# Legacy root-level planning files
+/findings.md
+/progress.md
+/task_plan.md
+
