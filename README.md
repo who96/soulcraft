@@ -12,12 +12,13 @@ SoulCraft is a data-driven persona extraction pipeline that transforms real huma
 
 Imagine a world where the greatest minds in human history can collaborate:
 
+- **Cao Cao (曹操)** routes and reviews all decisions as your CEO
 - **Warren Buffett** reviews your investment thesis
 - **Elon Musk** challenges your product with first-principles thinking
 - **Linus Torvalds** reviews your code architecture
-- **Steve Jobs** critiques your user experience
+- **Zhuge Liang (诸葛亮)** architects your system design
 
-SoulCraft makes this possible — not through shallow role-play prompts, but through **deep, evidence-based persona extraction** from real human data.
+SoulCraft makes this possible — not through shallow role-play prompts, but through **deep, evidence-based persona extraction** from real human data. Each soul is an atomic, reusable unit. Mix and match freely across teams.
 
 ---
 
@@ -91,6 +92,49 @@ A 4-stage pipeline driven by a master prompt template:
 
 ---
 
+## 📂 Project Structure
+
+```
+soulcraft/
+├── souls/                        ← Atomic units: one soul.md per person
+│   ├── cao-cao/soul.md           ← 曹操 — CEO / Router Agent
+│   ├── zhuge-liang/soul.md       ← 诸葛亮 — CTO / Architect
+│   ├── elon-musk/soul.md         ← Musk — First-principles innovator
+│   ├── warren-buffett/soul.md    ← Buffett — Value investor
+│   └── duan-yongping/soul.md     ← 段永平 — Product intuition
+│
+├── teams/                        ← Pre-configured team templates (YAML)
+│   ├── three-kingdoms.yaml       ← 三国管理团队
+│   ├── dream-company.yaml        ← 人类最强公司
+│   └── china-business.yaml       ← 中国商业天团
+│
+├── l0_adapter/                   ← Data source converter (DLG/MON/MIC/ATT)
+└── docs/                         ← Pipeline templates & documentation
+```
+
+**`souls/` is the atomic layer. `teams/` is just combination recipes.**
+
+Users can freely compose: put Cao Cao as CEO leading Musk, Buffett, and Duan Yongping — or swap in any other soul.
+
+---
+
+## 🏯 Team Templates
+
+### Three Kingdoms Management Team (三国管理团队)
+
+| Role | Soul | Why |
+|------|------|-----|
+| **CEO / Router** | Cao Cao (曹操) | Cross-validates outputs, trust-level based delegation, fast course-correction |
+| **COO** | Xun Yu (荀彧) | Resource allocation, operational planning |
+| **CSO** | Guo Jia (郭嘉) | Risk assessment, competitive strategy |
+| **CTO** | Zhuge Liang (诸葛亮) | System architecture, technical decisions |
+| **VP Engineering** | Zhang Liao (张辽) | Execution, implementation, delivery |
+| **Red Team** | Sima Yi (司马懿) | Adversarial review, find weaknesses |
+
+Built-in conflict dynamics: CTO vs Red Team (healthy adversarial tension), CSO (aggressive) vs COO (conservative) strategic balance, CEO as final arbiter.
+
+---
+
 ## 🔌 Integration
 
 ### OpenClaw / Claude Code
@@ -112,6 +156,7 @@ The **E2 Conflict Resolution** layer enables realistic multi-agent interaction:
 # Each agent knows how they handle disagreement
 musk_agent.conflict_style   # "first-principles debate, never yields on physics"
 buffett_agent.conflict_style # "patient, data-driven, yields when numbers disagree"
+caocao_agent.trust_policy   # "cross-validate with 2nd agent before accepting"
 ```
 
 ---
@@ -147,11 +192,13 @@ python -m l0_adapter --type DLG \
 
 - [x] 3+1 Pipeline v5 with ABCDE model
 - [x] L0 Adapter (Dialogue, Monologue, Micro-burst, Attributed parsers)
-- [ ] Example personas: Buffett, Musk, Linus
+- [ ] Example souls: Buffett, Musk, Linus, Cao Cao
+- [ ] Team templates: Three Kingdoms, Dream Company
+- [ ] `team.yaml` schema and routing engine
 - [ ] OpenClaw soul.md auto-generation
 - [ ] Verification framework (train/test split for persona accuracy)
 - [ ] Web UI for persona exploration
-- [ ] Multi-agent debate simulation
+- [ ] Multi-agent debate simulation with conflict resolution
 
 ---
 
@@ -159,10 +206,11 @@ python -m l0_adapter --type DLG \
 
 We welcome contributions! Key areas:
 
-1. **New L0 parsers** — Support more data source formats
-2. **Example personas** — Extract and verify personas from public figures
-3. **Evaluation metrics** — Better ways to measure persona fidelity
-4. **Integration plugins** — Connect with more agent frameworks
+1. **New souls** — Extract personas from historical/modern figures and submit `soul.md`
+2. **New L0 parsers** — Support more data source formats
+3. **Team templates** — Design new team compositions for different scenarios
+4. **Evaluation metrics** — Better ways to measure persona fidelity
+5. **Integration plugins** — Connect with more agent frameworks (OpenClaw, CrewAI, AutoGen)
 
 ---
 
