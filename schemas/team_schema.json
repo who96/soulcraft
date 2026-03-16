@@ -1,10 +1,19 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "SoulCraft Team Schema",
-  "description": "Defines a team of SoulCraft souls that collaborate sequentially.",
+  "description": "Defines a team of SoulCraft souls with sequential or hybrid routing.",
   "type": "object",
   "required": ["metadata", "routing_strategy", "souls"],
   "additionalProperties": false,
+  "if": {
+    "properties": { "routing_strategy": { "const": "hybrid" } }
+  },
+  "then": {
+    "required": ["metadata", "routing_strategy", "souls", "stages"]
+  },
+  "else": {
+    "not": { "required": ["stages"] }
+  },
   "properties": {
     "metadata": {
       "type": "object",
@@ -33,13 +42,13 @@
     },
     "routing_strategy": {
       "type": "string",
-      "enum": ["sequential"],
-      "description": "How souls interact. 'sequential' = pipeline in array order."
+      "enum": ["sequential", "hybrid"],
+      "description": "How souls interact. 'sequential' = pipeline in array order. 'hybrid' = stages with mixed routing types."
     },
     "souls": {
       "type": "array",
       "minItems": 2,
-      "description": "Ordered list of souls. Array order = execution order.",
+      "description": "Metadata authority: team_role and directives for each soul. Array order = execution order for sequential routing.",
       "items": {
         "type": "object",
         "required": ["soul_ref", "team_role", "directives"],
@@ -57,6 +66,43 @@
           "directives": {
             "type": "string",
             "description": "Team-specific instructions injected into this soul's Team Context."
+          }
+        }
+      }
+    },
+    "stages": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Execution stages for hybrid routing. Each stage groups souls with a routing type.",
+      "items": {
+        "type": "object",
+        "required": ["name", "type", "souls"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$",
+            "description": "URL-safe slug for stage name (used as directory name)."
+          },
+          "type": {
+            "type": "string",
+            "enum": ["sequential", "iterative", "parallel"],
+            "description": "Stage routing type."
+          },
+          "souls": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9-]*$"
+            },
+            "description": "Soul refs in this stage. Must exist in top-level souls array."
+          },
+          "max_iterations": {
+            "type": "integer",
+            "minimum": 1,
+            "default": 3,
+            "description": "Max iterations for iterative stages. Ignored for other types."
           }
         }
       }

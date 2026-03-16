@@ -6,6 +6,7 @@ Usage:
     python demo.py --soul warren-buffett        # use Buffett soul
     python demo.py --soul linus-torvalds --query "Review this code: ..."
     python demo.py --team code-review --query "Review this code: ..."
+    python demo.py --team dream-company --offline  # hybrid team demo
 
 Requirements:
     pip install openai   (or any OpenAI-compatible client)
@@ -33,7 +34,7 @@ def load_soul_md(soul_id: str) -> str:
 
 
 def load_team_souls(team_id: str) -> list[tuple[str, str]]:
-    """Load team-tuned soul.md files for a team.
+    """Load team-tuned soul.md files for a sequential team.
 
     Returns list of (soul_id, soul_md_content) in pipeline order.
     """
@@ -66,6 +67,59 @@ def load_team_souls(team_id: str) -> list[tuple[str, str]]:
             sys.exit(1)
         souls.append((ref, md_path.read_text()))
     return souls
+
+
+def get_team_routing(team_id: str) -> str:
+    """Get routing strategy for a team."""
+    import yaml
+    team_path = TEAMS_DIR / team_id / "team.yaml"
+    if not team_path.exists():
+        available = [p.parent.name for p in TEAMS_DIR.glob("*/team.yaml")]
+        print(f"ERROR: Team '{team_id}' not found.", file=sys.stderr)
+        print(f"Available teams: {', '.join(available)}", file=sys.stderr)
+        sys.exit(1)
+    with open(team_path) as f:
+        team = yaml.safe_load(f)
+    return team.get("routing_strategy", "sequential")
+
+
+def load_hybrid_team_data(team_id: str) -> dict:
+    """Load full hybrid team data including stages and soul.md files."""
+    import yaml
+
+    team_path = TEAMS_DIR / team_id / "team.yaml"
+    if not team_path.exists():
+        available = [p.parent.name for p in TEAMS_DIR.glob("*/team.yaml")]
+        print(f"ERROR: Team '{team_id}' not found.", file=sys.stderr)
+        print(f"Available teams: {', '.join(available)}", file=sys.stderr)
+        sys.exit(1)
+
+    build_dir = TEAMS_DIR / team_id / "build"
+    if not build_dir.exists():
+        print(f"ERROR: Team '{team_id}' not compiled.", file=sys.stderr)
+        sys.exit(1)
+
+    with open(team_path) as f:
+        team = yaml.safe_load(f)
+
+    # Load soul.md files from stage-scoped build dirs
+    stages_data = []
+    for stage_idx, stage in enumerate(team["stages"]):
+        stage_dir_name = f"{stage_idx:02d}-{stage['name']}"
+        stage_souls = []
+        for ref in stage["souls"]:
+            md_path = build_dir / stage_dir_name / ref / "soul.md"
+            if not md_path.exists():
+                print(f"ERROR: '{ref}' not found at {md_path}", file=sys.stderr)
+                sys.exit(1)
+            stage_souls.append((ref, md_path.read_text()))
+        stages_data.append({
+            "name": stage["name"],
+            "type": stage["type"],
+            "max_iterations": stage.get("max_iterations", 3),
+            "souls": stage_souls,
+        })
+    return {"team": team, "stages": stages_data}
 
 
 def build_handoff_prompt(user_query: str, prior_outputs: list[tuple[str, str]]) -> str:
@@ -129,7 +183,7 @@ def run_demo_offline(system_prompt: str, soul_id: str, user_message: str):
 
 def run_team_demo_offline(team_id: str, team_souls: list[tuple[str, str]],
                           user_message: str):
-    """Offline team demo — show pipeline structure and prompts."""
+    """Offline sequential team demo — show pipeline structure and prompts."""
     print("=" * 60)
     print(f"  SoulCraft Team Demo — {team_id} (offline mode)")
     print("=" * 60)
@@ -152,6 +206,115 @@ def run_team_demo_offline(team_id: str, team_souls: list[tuple[str, str]],
 
     print("⚠️  To run live, set OPENAI_API_KEY:")
     print(f"    python demo.py --team {team_id} --query \"{user_message}\"")
+
+
+def run_hybrid_demo_offline(team_id: str, hybrid_data: dict, user_message: str):
+    """Offline hybrid team demo — show stages structure."""
+    team = hybrid_data["team"]
+    meta = team["metadata"]
+    print("=" * 60)
+    print(f"  SoulCraft Hybrid Team Demo — {meta['name']} (offline mode)")
+    print("=" * 60)
+    print()
+    print(f"💬 Query: {user_message}")
+    print()
+
+    type_icons = {"iterative": "🔄", "sequential": "➡️", "parallel": "↔️"}
+
+    for i, stage in enumerate(hybrid_data["stages"], 1):
+        icon = type_icons.get(stage['type'], '❓')
+        total = len(hybrid_data['stages'])
+        print(f"{'=' * 50}")
+        print(f"{icon} Stage {i}/{total}: {stage['name']} ({stage['type']})")
+        if stage['type'] == 'iterative':
+            print(f"   Max iterations: {stage['max_iterations']}")
+        print(f"{'=' * 50}")
+        print()
+
+        for soul_id, soul_md in stage['souls']:
+            print(f"  👤 {soul_id}")
+            # Show Team Context section
+            if "## Team Context" in soul_md:
+                tc = soul_md.split("## Team Context")[1][:400]
+                print(f"     Team Context: ...{tc[:200]}...")
+            print()
+
+    print("⚠️  To run live, set OPENAI_API_KEY:")
+    print(f"    python demo.py --team {team_id} --query \"{user_message}\"")
+
+
+def build_parallel_merge(outputs: list[tuple[str, str]]) -> str:
+    """Merge parallel outputs with deterministic delimiters."""
+    parts = []
+    for soul_id, output in outputs:
+        parts.append(f"===SOULCRAFT_PARALLEL_V1 soul={soul_id}===")
+        parts.append(output)
+        parts.append("===END_PARALLEL===")
+        parts.append("")
+    return "\n".join(parts)
+
+
+def run_hybrid_demo_live(team_id: str, hybrid_data: dict,
+                         user_message: str, model: str):
+    """Live hybrid team demo — iterative, parallel, and sequential stages."""
+    team = hybrid_data["team"]
+    meta = team["metadata"]
+    print(f"🤖 Hybrid Team '{meta['name']}'")
+    print(f"💬 Query: {user_message}\n")
+
+    # accumulate output across stages
+    context = ""
+
+    for stage_idx, stage in enumerate(hybrid_data["stages"]):
+        stage_name = stage["name"]
+        stage_type = stage["type"]
+        total = len(hybrid_data['stages'])
+        print(f"\n{'=' * 50}")
+        print(f"Stage {stage_idx + 1}/{total}: {stage_name} ({stage_type})")
+        print(f"{'=' * 50}\n")
+
+        if stage_type == "iterative":
+            max_iter = stage["max_iterations"]
+            iter_buffer = ""
+            for round_num in range(1, max_iter + 1):
+                print(f"\n--- Iteration {round_num}/{max_iter} ---\n")
+                for soul_id, soul_md in stage["souls"]:
+                    prompt_parts = [user_message]
+                    if context:
+                        prompt_parts.insert(0, context)
+                    if iter_buffer:
+                        prompt_parts.insert(-1, iter_buffer)
+                    full_prompt = "\n\n".join(prompt_parts)
+                    response = chat_with_api(soul_md, full_prompt, model)
+                    print(f"🗣️  {soul_id} (round {round_num}):\n")
+                    print(response)
+                    print()
+                    iter_buffer += f"\n===SOULCRAFT_HANDOFF_V1 soul={soul_id}===\n{response}\n===END_HANDOFF===\n"
+            context += iter_buffer
+
+        elif stage_type == "parallel":
+            parallel_outputs = []
+            for soul_id, soul_md in stage["souls"]:
+                full_prompt = context + "\n\n" + user_message if context else user_message
+                response = chat_with_api(soul_md, full_prompt, model)
+                print(f"🗣️  {soul_id} (parallel):\n")
+                print(response)
+                print()
+                parallel_outputs.append((soul_id, response))
+            merged = build_parallel_merge(parallel_outputs)
+            context += "\n" + merged
+
+        elif stage_type == "sequential":
+            for soul_id, soul_md in stage["souls"]:
+                full_prompt = context + "\n\n" + user_message if context else user_message
+                response = chat_with_api(soul_md, full_prompt, model)
+                print(f"🗣️  {soul_id}:\n")
+                print(response)
+                print()
+                context += f"\n===SOULCRAFT_HANDOFF_V1 soul={soul_id}===\n{response}\n===END_HANDOFF===\n"
+
+    print("=" * 60)
+    print(f"✅ Hybrid pipeline complete ({len(hybrid_data['stages'])} stages)")
 
 
 def run_team_demo_live(team_id: str, team_souls: list[tuple[str, str]],
@@ -218,6 +381,30 @@ def main():
 
     # Team mode
     if args.team:
+        routing = get_team_routing(args.team)
+
+        if routing == "hybrid":
+            hybrid_data = load_hybrid_team_data(args.team)
+
+            if args.offline:
+                run_hybrid_demo_offline(args.team, hybrid_data, args.query)
+                return
+
+            try:
+                from openai import OpenAI  # noqa: F401
+                import os
+
+                if not os.environ.get("OPENAI_API_KEY") and not os.environ.get("OPENAI_BASE_URL"):
+                    print("No API key set. Running in offline mode.\n")
+                    run_hybrid_demo_offline(args.team, hybrid_data, args.query)
+                    return
+
+                run_hybrid_demo_live(args.team, hybrid_data, args.query, args.model)
+            except ImportError:
+                run_hybrid_demo_offline(args.team, hybrid_data, args.query)
+            return
+
+        # Sequential team mode (original)
         team_souls = load_team_souls(args.team)
 
         if args.offline:

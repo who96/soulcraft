@@ -113,16 +113,29 @@ def generate_team_agents_md(team: dict) -> str:
         f"**Version:** {meta['version']}",
         f"**Routing Strategy:** {routing}",
         "",
-        "## Pipeline Order",
-        "",
     ]
 
-    for i, soul_entry in enumerate(team["souls"], 1):
-        ref = soul_entry["soul_ref"]
-        role = soul_entry["team_role"]
-        lines.append(f"{i}. **{ref}** — {role}")
+    if routing == "hybrid" and "stages" in team:
+        lines.append("## Stages")
+        lines.append("")
+        for i, stage in enumerate(team["stages"], 1):
+            lines.append(f"### Stage {i}: {stage['name']} ({stage['type']})")
+            if stage["type"] == "iterative":
+                lines.append(f"Max iterations: {stage.get('max_iterations', 3)}")
+            lines.append("")
+            for ref in stage["souls"]:
+                soul_entry = next(s for s in team["souls"] if s["soul_ref"] == ref)
+                lines.append(f"- **{ref}** — {soul_entry['team_role']}")
+            lines.append("")
+    else:
+        lines.append("## Pipeline Order")
+        lines.append("")
+        for i, soul_entry in enumerate(team["souls"], 1):
+            ref = soul_entry["soul_ref"]
+            role = soul_entry["team_role"]
+            lines.append(f"{i}. **{ref}** — {role}")
+        lines.append("")
 
-    lines.append("")
     lines.append("## Description")
     lines.append("")
     lines.append(meta.get("description", "").strip())
@@ -167,16 +180,16 @@ def package_openclaw(soul_path: Path, output_dir: Path | None = None) -> Path:
 def package_team_openclaw(team_path: Path, output_dir: Path | None = None) -> Path:
     """Package a team.yaml into .openclaw/ directory with per-soul subdirs.
 
-    Uses team_compile to generate team-tuned soul.md files, then packages
-    each soul with its identity.md into subdirectories.
+    Supports both sequential and hybrid teams. Uses team_compile to generate
+    team-tuned soul.md files, then packages each soul with identity.md.
     """
     from compiler.team_compile import compile_team, load_team
 
     team = load_team(team_path)
     team_id = team["metadata"]["id"]
+    routing = team.get("routing_strategy", "sequential")
 
     # Compile team first (produces build/ files)
-    # Forward output_dir so intermediates go to the export root, not repo
     if output_dir:
         compile_team(team_path, output_dir=output_dir)
         build_dir = output_dir / team_id / "build"
@@ -198,19 +211,33 @@ def package_team_openclaw(team_path: Path, output_dir: Path | None = None) -> Pa
     # Per-soul subdirectories
     souls_dir = Path(__file__).resolve().parent.parent / "souls"
 
-    for soul_entry in team["souls"]:
-        ref = soul_entry["soul_ref"]
-        soul_subdir = target_dir / ref
-        soul_subdir.mkdir(parents=True, exist_ok=True)
+    if routing == "hybrid" and "stages" in team:
+        # Hybrid: read from stage-scoped build dirs
+        for stage_idx, stage in enumerate(team["stages"]):
+            stage_dir_name = f"{stage_idx:02d}-{stage['name']}"
+            for ref in stage["souls"]:
+                soul_subdir = target_dir / ref
+                soul_subdir.mkdir(parents=True, exist_ok=True)
 
-        # Team-tuned soul.md from build/
-        team_tuned_md = build_dir / ref / "soul.md"
-        (soul_subdir / "soul.md").write_text(team_tuned_md.read_text())
+                team_tuned_md = build_dir / stage_dir_name / ref / "soul.md"
+                (soul_subdir / "soul.md").write_text(team_tuned_md.read_text())
 
-        # Identity.md from base soul
-        base_soul = load_soul(souls_dir / ref / "soul.yaml")
-        identity_md = generate_identity_md(base_soul)
-        (soul_subdir / "identity.md").write_text(identity_md)
+                base_soul = load_soul(souls_dir / ref / "soul.yaml")
+                identity_md = generate_identity_md(base_soul)
+                (soul_subdir / "identity.md").write_text(identity_md)
+    else:
+        # Sequential: read from flat build dirs
+        for soul_entry in team["souls"]:
+            ref = soul_entry["soul_ref"]
+            soul_subdir = target_dir / ref
+            soul_subdir.mkdir(parents=True, exist_ok=True)
+
+            team_tuned_md = build_dir / ref / "soul.md"
+            (soul_subdir / "soul.md").write_text(team_tuned_md.read_text())
+
+            base_soul = load_soul(souls_dir / ref / "soul.yaml")
+            identity_md = generate_identity_md(base_soul)
+            (soul_subdir / "identity.md").write_text(identity_md)
 
     return target_dir
 

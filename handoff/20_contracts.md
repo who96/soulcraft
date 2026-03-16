@@ -25,30 +25,36 @@
 
 ---
 
-## Team IR Schema Contract (v0.1.0)
+## Team IR Schema Contract (v0.2.0)
 
 - **Format**: JSON Schema at `schemas/team_schema.json`, instances in YAML at `teams/<id>/team.yaml`
 - **Required top-level keys**: `metadata`, `routing_strategy`, `souls`
-- **Routing**: `sequential` only (array order = execution order, no `order` field)
-- **Souls**: array of `{ soul_ref, team_role, directives }`, minItems 2
+- **Routing**: `sequential` (array order = execution) or `hybrid` (explicit stages)
+- **Souls**: array of `{ soul_ref, team_role, directives }`, minItems 2 — metadata authority for all routing modes
+- **Stages** (hybrid only): array of `{ name, type, souls[], max_iterations? }`, type ∈ {sequential, iterative, parallel}
+- **Conditional**: `sequential` → no `stages`; `hybrid` → `stages` required
 - **ID**: URL-safe slug, matches directory name under `teams/`
 
 ## Team Compiler Contract
 
 - **Input**: `team.yaml` conforming to team schema + base `soul.yaml` files in `souls/`
-- **Output**: team-tuned `soul.md` files at `teams/<team-id>/build/<soul-id>/soul.md`
+- **Output (sequential)**: team-tuned `soul.md` files at `teams/<team-id>/build/<soul-id>/soul.md`
+- **Output (hybrid)**: team-tuned `soul.md` files at `teams/<team-id>/build/<stage-index>-<stage-name>/<soul-id>/soul.md`
 - **Structure**: base soul.md + appended `## Team Context` section
-- **Validation**: structural (JSON Schema) + semantic (soul_ref existence, no duplicates)
+- **Validation**: structural (JSON Schema) + semantic (soul_ref existence, no duplicates, stages refs ⊂ souls)
 - **Idempotency**: compiling the same team.yaml twice produces byte-identical output
 - **No base pollution**: base `souls/` directory is never modified
+- **Code path isolation**: sequential path unchanged; hybrid handled by separate branch
 
 ## Demo Contract
 
 - **Single soul**: `python demo.py --soul <id>` — loads `souls/<id>/soul.md`
-- **Team mode**: `python demo.py --team <id>` — loads `teams/<id>/build/*/soul.md`
+- **Team mode (sequential)**: `python demo.py --team <id>` — loads `teams/<id>/build/*/soul.md`
+- **Team mode (hybrid)**: `python demo.py --team <id>` — executes stages (iterative/parallel/sequential)
 - **Mutual exclusion**: `--soul` and `--team` cannot be used together
-- **Handoff format V1**: prior soul output wrapped in `===SOULCRAFT_HANDOFF_V1 soul=<id>===...===END_HANDOFF===`
-- **Offline**: `--offline` prints prompts without API call
+- **Handoff format V1**: `===SOULCRAFT_HANDOFF_V1 soul=<id>===...===END_HANDOFF===`
+- **Parallel merge format**: `===SOULCRAFT_PARALLEL_V1 soul=<id>===...===END_PARALLEL===`
+- **Offline**: `--offline` prints prompts/structure without API call
 
 ## Gate (Phase 2 Teams) — ✅ PASSED
 
@@ -64,6 +70,7 @@
 - **Input**: `team.yaml` conforming to team schema
 - **Output**: `.openclaw/` directory with `agents.md` + per-soul subdirs (`soul.md` + `identity.md`)
 - **`agents.md`**: team routing info with pipeline order, roles, and team metadata
+- **`agents.md` (hybrid)**: includes stages structure with types and routing info
 - **Per-soul dirs**: team-tuned `soul.md` (from team compiler) + `identity.md` (from base soul)
 - **CLI**: `python -m compiler.openclaw --team teams/<id>/team.yaml`
 - **Additive**: existing `package_openclaw()` is never modified
@@ -77,4 +84,15 @@
 - OpenClaw team packaging implemented with TDD (13 new tests, 1 regression, 1 hermetic)
 - All tests passing: `pytest tests/ -v` → 169 passed
 - Demo `--team three-kingdoms --offline` works end-to-end
+
+---
+
+## Gate (Phase 4 Dream Company) — ⬜ PENDING
+
+- Hybrid routing schema extended and backward-compatible
+- 7 new souls extracted (Bezos, Jobs, Cagan, Tufte, Carmack, Taleb, Munger) + 2 existing (Linus, Buffett)
+- dream-company team: 7-soul hybrid pipeline (core engine → implementation → parallel review → final arbiter)
+- All tests passing: `pytest tests/ -v` → 169 + new Phase 4 tests
+- Demo `--team dream-company --offline` works end-to-end
+- Codex + Gemini final review passed
 
