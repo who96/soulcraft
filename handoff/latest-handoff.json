@@ -1,16 +1,16 @@
 {
   "schema_version": "1",
-  "handoff_id": "20260315161526-65846-ea301dfa",
-  "generated_at_iso": "2026-03-15T16:15:26+0800",
-  "generated_at_epoch": 1773562526,
+  "handoff_id": "20260315230616-7447-09848074",
+  "generated_at_iso": "2026-03-15T23:06:16+0800",
+  "generated_at_epoch": 1773587176,
   "project_root_realpath": "/Users/huluobo/workSpace/soulcraft",
   "layout": "classic",
   "mode": "half_auto",
   "lane": null,
   "git_branch": "main",
-  "git_head": "ea301dfa96b63a2f9ff8d7cef91864ecaf03ecf7",
-  "snapshot_path": "/Users/huluobo/workSpace/窗口交接20260315161526.md",
-  "coldstart_path": "/Users/huluobo/workSpace/窗口交接20260315161526_冷启动提示词.min.txt",
+  "git_head": "09848074a8dde33446e90c164870140bf7f8224c",
+  "snapshot_path": "/Users/huluobo/workSpace/窗口交接20260315230616.md",
+  "coldstart_path": "/Users/huluobo/workSpace/窗口交接20260315230616_冷启动提示词.min.txt",
   "source_files": [
     "/Users/huluobo/workSpace/soulcraft/handoff/00_role_and_rules.md",
     "/Users/huluobo/workSpace/soulcraft/handoff/10_decisions_frozen.md",
@@ -18,8 +18,8 @@
     "/Users/huluobo/workSpace/soulcraft/handoff/30_now.md"
   ],
   "sha256": {
-    "snapshot": "00dee4c01568a0113b5b7eb1f64a57b859b6223de6b5ed416ac587f99a132979",
-    "coldstart": "f998c1dde168d09d4e65e895fdf1e6b7683c096362e443c7b8cfc816396df2c2"
+    "snapshot": "2d4a4b22f64129b2cbac14adc596253f7ddd7fc526408f83c152f927b4847af5",
+    "coldstart": "29d06d344addebdcc580b4bde35bee7cc9753df12c574067fadf88cb21469aed"
   },
   "guard": {}
 }

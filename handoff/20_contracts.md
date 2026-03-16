@@ -56,3 +56,25 @@
 - ≥1 team (code-review: Linus + Buffett) compiled and tested
 - All tests passing: `pytest tests/ -v` → 0 failures (53 Phase 1 + 32 Phase 2)
 - Demo `--team code-review --offline` works end-to-end
+
+---
+
+## OpenClaw Team Packaging Contract
+
+- **Input**: `team.yaml` conforming to team schema
+- **Output**: `.openclaw/` directory with `agents.md` + per-soul subdirs (`soul.md` + `identity.md`)
+- **`agents.md`**: team routing info with pipeline order, roles, and team metadata
+- **Per-soul dirs**: team-tuned `soul.md` (from team compiler) + `identity.md` (from base soul)
+- **CLI**: `python -m compiler.openclaw --team teams/<id>/team.yaml`
+- **Additive**: existing `package_openclaw()` is never modified
+- **Hermetic output**: when `output_dir` is provided, all intermediates go there, not repo
+
+## Gate (Phase 3 Three Kingdoms) — ✅ PASSED
+
+- 6 Three Kingdoms base souls extracted: cao-cao, zhuge-liang, sima-yi, guo-jia, xun-yu, zhang-liao
+- All 6 pass schema validation and compile to soul.md
+- three-kingdoms management team: 6-soul sequential pipeline (COO→CSO→CTO→VP Eng→Red Team→CEO)
+- OpenClaw team packaging implemented with TDD (13 new tests, 1 regression, 1 hermetic)
+- All tests passing: `pytest tests/ -v` → 169 passed
+- Demo `--team three-kingdoms --offline` works end-to-end
+

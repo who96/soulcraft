@@ -6,9 +6,18 @@ The OpenClaw convention expects:
     ├── identity.md      ← Short identity card
     └── agents.md        ← Agent routing directives (optional, for teams)
 
+Team packaging extends this to:
+    .openclaw/
+    ├── agents.md              ← Team routing (souls, roles, order)
+    ├── <soul-id>/
+    │   ├── soul.md            ← Team-tuned soul.md
+    │   └── identity.md        ← Per-soul identity card
+    └── ...
+
 Usage:
     python -m compiler.openclaw souls/linus-torvalds/soul.yaml
     python -m compiler.openclaw --all --output-dir ./export
+    python -m compiler.openclaw --team teams/three-kingdoms/team.yaml
 """
 
 import argparse
@@ -92,6 +101,35 @@ def generate_agents_md(soul: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
+def generate_team_agents_md(team: dict) -> str:
+    """Generate agents.md for a team package — routing and pipeline info."""
+    meta = team["metadata"]
+    routing = team["routing_strategy"]
+
+    lines = [
+        f"# {meta['name']} — Team Agent Configuration",
+        "",
+        f"**Team ID:** {meta['id']}",
+        f"**Version:** {meta['version']}",
+        f"**Routing Strategy:** {routing}",
+        "",
+        "## Pipeline Order",
+        "",
+    ]
+
+    for i, soul_entry in enumerate(team["souls"], 1):
+        ref = soul_entry["soul_ref"]
+        role = soul_entry["team_role"]
+        lines.append(f"{i}. **{ref}** — {role}")
+
+    lines.append("")
+    lines.append("## Description")
+    lines.append("")
+    lines.append(meta.get("description", "").strip())
+
+    return "\n".join(lines) + "\n"
+
+
 def package_openclaw(soul_path: Path, output_dir: Path | None = None) -> Path:
     """Package a soul.yaml into .openclaw/ directory format."""
     schema = load_schema()
@@ -126,15 +164,75 @@ def package_openclaw(soul_path: Path, output_dir: Path | None = None) -> Path:
     return target_dir
 
 
+def package_team_openclaw(team_path: Path, output_dir: Path | None = None) -> Path:
+    """Package a team.yaml into .openclaw/ directory with per-soul subdirs.
+
+    Uses team_compile to generate team-tuned soul.md files, then packages
+    each soul with its identity.md into subdirectories.
+    """
+    from compiler.team_compile import compile_team, load_team
+
+    team = load_team(team_path)
+    team_id = team["metadata"]["id"]
+
+    # Compile team first (produces build/ files)
+    # Forward output_dir so intermediates go to the export root, not repo
+    if output_dir:
+        compile_team(team_path, output_dir=output_dir)
+        build_dir = output_dir / team_id / "build"
+    else:
+        compile_team(team_path)
+        build_dir = team_path.parent / "build"
+
+    # Determine output directory
+    if output_dir:
+        target_dir = output_dir / team_id / ".openclaw"
+    else:
+        target_dir = team_path.parent / ".openclaw"
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    # Team-level agents.md
+    agents_md = generate_team_agents_md(team)
+    (target_dir / "agents.md").write_text(agents_md)
+
+    # Per-soul subdirectories
+    souls_dir = Path(__file__).resolve().parent.parent / "souls"
+
+    for soul_entry in team["souls"]:
+        ref = soul_entry["soul_ref"]
+        soul_subdir = target_dir / ref
+        soul_subdir.mkdir(parents=True, exist_ok=True)
+
+        # Team-tuned soul.md from build/
+        team_tuned_md = build_dir / ref / "soul.md"
+        (soul_subdir / "soul.md").write_text(team_tuned_md.read_text())
+
+        # Identity.md from base soul
+        base_soul = load_soul(souls_dir / ref / "soul.yaml")
+        identity_md = generate_identity_md(base_soul)
+        (soul_subdir / "identity.md").write_text(identity_md)
+
+    return target_dir
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Package soul.yaml → .openclaw/ directory"
     )
     parser.add_argument("soul_files", nargs="*", help="Path(s) to soul.yaml")
     parser.add_argument("--all", action="store_true", help="Package all souls")
+    parser.add_argument("--team", type=Path, help="Path to team.yaml for team packaging")
     parser.add_argument("--output-dir", type=Path, help="Output base directory")
     args = parser.parse_args()
 
+    # Team packaging mode
+    if args.team:
+        print(f"Packaging team: {args.team}")
+        target = package_team_openclaw(args.team, args.output_dir)
+        print(f"  📦 Team packaged → {target}/")
+        return
+
+    # Base soul packaging mode
     if args.all:
         soul_files = find_all_souls()
     else:
@@ -152,3 +250,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

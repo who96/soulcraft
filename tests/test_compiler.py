@@ -31,7 +31,10 @@ class TestCompilation:
     def schema(self):
         return load_schema()
 
-    @pytest.fixture(scope="class", params=["linus-torvalds", "warren-buffett"])
+    @pytest.fixture(scope="class", params=[
+        "linus-torvalds", "warren-buffett",
+        "cao-cao", "zhuge-liang", "sima-yi", "guo-jia", "xun-yu", "zhang-liao",
+    ])
     def soul_pair(self, request):
         soul_path = SOULS_DIR / request.param / "soul.yaml"
         soul = load_soul(soul_path)
@@ -66,7 +69,10 @@ class TestCompilation:
 class TestProvenanceIntegrity:
     """Test that provenance data is preserved through compilation."""
 
-    @pytest.fixture(scope="class", params=["linus-torvalds", "warren-buffett"])
+    @pytest.fixture(scope="class", params=[
+        "linus-torvalds", "warren-buffett",
+        "cao-cao", "zhuge-liang", "sima-yi", "guo-jia", "xun-yu", "zhang-liao",
+    ])
     def soul_data(self, request):
         soul_path = SOULS_DIR / request.param / "soul.yaml"
         return request.param, load_soul(soul_path)
@@ -87,7 +93,10 @@ class TestProvenanceIntegrity:
 class TestIdempotency:
     """Test that compilation is deterministic."""
 
-    @pytest.fixture(scope="class", params=["linus-torvalds", "warren-buffett"])
+    @pytest.fixture(scope="class", params=[
+        "linus-torvalds", "warren-buffett",
+        "cao-cao", "zhuge-liang", "sima-yi", "guo-jia", "xun-yu", "zhang-liao",
+    ])
     def soul(self, request):
         soul_path = SOULS_DIR / request.param / "soul.yaml"
         return request.param, load_soul(soul_path)
