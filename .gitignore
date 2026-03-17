@@ -23,3 +23,8 @@ handoff/plans/
 /progress.md
 /task_plan.md
 
+soulcraft-ui/node_modules/
+soulcraft-ui/*.db
+soulcraft-ui/*.db-wal
+soulcraft-ui/*.db-shm
+soulcraft-ui/.next/
